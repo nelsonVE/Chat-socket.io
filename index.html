@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Socket.IO chat</title>
+        <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font: 13px Helvetica, Arial; }
+        form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+        form input { border: 0; padding: 10px; width: 69%; margin-right: .5%; }
+        form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+        #messages { list-style-type: none; margin: 0; padding: 0; }
+        #messages li { padding: 5px 10px; }
+        #messages li:nth-child(odd) { background: #eee; }
+        </style>
+    </head>
+    <body>
+        <ul id="messages"></ul>
+        <form action="">
+            <p id="info" style="color: white; padding-left: 21%;"><br></p>
+            <input id="n" style="width: 20%;" autocomplete="off" />
+            <input id="m" autocomplete="off" />
+            <button>Send</button>
+        </form>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(function () {
+        var socket = io();
+        $('form').submit(function(e){
+            e.preventDefault();
+
+            if($('#m').val().trim() == ""){
+                return alert('You need to write something before send a message.');
+            }
+
+            if($('#n').val().trim() == ""){
+                return alert('You need a username first.');
+            }
+
+            socket.emit('writing off', $('#n').val());
+            socket.emit('chat message', $('#m').val(), $('#n').val());
+            $('#m').val('');
+            return false;
+        });
+
+        socket.on('chat message', function(msg, username){
+            $('#messages').append($('<li>').text(username+" says: "+msg));
+        });
+
+        $('#m').on("keypress", function(){
+            if($('#n').val().trim() == "" || $('#m').val().trim() == ""){
+                return;
+            }
+            socket.emit('writing on', $('#n').val());
+        });
+
+        $('#m').on("focusout", function(){
+            if($('#n').val().trim() == "" || $('#m').val().trim() == ""){
+                return;
+            }
+            socket.emit('writing off', $('#n').val());
+        });
+
+        socket.on('writing on', function(username){
+            $('#info').html(username+' is writing a message.');
+        });
+
+        socket.on('writing off', function(){
+            $('#info').html('<br>');
+        });
+      });
+    </script>
+</html>
